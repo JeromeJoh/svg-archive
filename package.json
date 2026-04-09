@@ -1,0 +1,22 @@
+{
+  "name": "your-project-name",
+  "version": "1.0.0",
+  "description": "",
+  "source": "src/index.js",
+  "keywords": [
+    "web-component",
+    "custom-element"
+  ],
+  "author": "Jerome Joh",
+  "license": "MIT",
+  "main": "dist/main.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "parcel build src/index.js --dist-dir dist --no-source-maps"
+  },
+  "devDependencies": {
+    "parcel": "^2.16.0"
+  }
+}
