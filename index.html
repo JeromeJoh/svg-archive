@@ -1,55 +1,14 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title> Demo Starter</title>
-  <link rel="shortcut icon"
-    href="https://icons.iconarchive.com/icons/aniket-suvarna/box-regular/128/bx-font-color-icon.png"
-    type="image/x-icon">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css">
-  <link rel="stylesheet" href="base.css">
-  <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#317EFB">
-</head>
-
-<body>
-  <header>
-    <h1>Heading</h1>
-  </header>
-  <main>
-    <my-app></my-app>
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/src/index.css">
+    <title>svg-archive</title>
+  </head>
+  <body>
     <div id="app"></div>
-  </main>
-  <footer>
-    Footer
-  </footer>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"
-    integrity="sha512-NcZdtrT77bJr4STcmsGAESr06BYGE8woZdSdEgqnpyqac7sugNO+Tr4bGwGF3MsnEkGKhU2KL2xh6Ec+BqsaHA=="
-    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script type="module" src="index.js"></script>
-  <script src="./register-sw.js"></script>
-  <script type="module">
-    import { h, render } from "https://esm.sh/preact";
-    import { useState } from "https://esm.sh/preact/hooks";
-    import htm from "https://esm.sh/htm";
-
-    const html = htm.bind(h);
-
-    const App = () => {
-      const [count, setCount] = useState(0);
-      return html`
-        <div>
-          <h2>Main Content</h2>
-          <p>Count: ${count}</p>
-          <button onClick=${() => setCount(count + 1)}>+1</button>
-        </div>
-  `;
-    }
-
-    render(html`<${App} />`, document.getElementById('app'));
-  </script>
-</body>
-
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
 </html>
