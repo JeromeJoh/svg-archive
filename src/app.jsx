@@ -1,30 +1,5 @@
 import { useState, useEffect } from 'preact/hooks'
 
-// Mock SVG data
-const initialSvgs = [
-  {
-    id: '1',
-    name: 'Home Icon',
-    content:
-      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-home"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
-    tags: ['home', 'house', 'navigation'],
-  },
-  {
-    id: '2',
-    name: 'Settings Icon',
-    content:
-      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-settings"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.78 1.35a2 2 0 0 0 .73 2.73l.15.08a2 2 0 0 1 1 1.74v.44a2 2 0 0 1-1 1.73l-.15.08a2 2 0 0 0-.73 2.73l.78 1.35a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 1-1.74v.44a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.78-1.35a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.44a2 2 0 0 1 1-1.73l.15-.08a2 2 0 0 0 .73-2.73l-.78-1.35a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-1-1.74V2a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>',
-    tags: ['settings', 'gear', 'configuration'],
-  },
-  {
-    id: '3',
-    name: 'User Icon',
-    content:
-      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
-    tags: ['user', 'profile', 'account'],
-  },
-]
-
 const SvgItem = ({ svg }) => {
   const copyToClipboard = () => {
     navigator.clipboard
@@ -95,7 +70,7 @@ export function App() {
     const loadSvgs = async () => {
       const modules = import.meta.glob('./assets/svgs/*.svg', { as: 'raw' })
       const dynamicSvgs = []
-      let idCounter = initialSvgs.length + 1
+      let idCounter = 1
 
       for (const path in modules) {
         const getContent = modules[path]
@@ -109,7 +84,7 @@ export function App() {
         })
       }
       setDynamicSvgsCount(dynamicSvgs.length)
-      setAllSvgs([...initialSvgs, ...dynamicSvgs])
+      setAllSvgs(dynamicSvgs)
     }
     loadSvgs()
   }, [])
