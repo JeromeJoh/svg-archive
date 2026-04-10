@@ -1,1 +1,13 @@
-@import "tailwindcss";
+@tailwind utilities;
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden; /* Prevent horizontal scroll */
+}
+
+body {
+  background-color: #1a202c; /* Ensure body has a default background color */
+}

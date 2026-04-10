@@ -8,36 +8,67 @@ const SvgItem = ({ svg }) => {
       .catch((err) => console.error('Failed to copy SVG: ', err))
   }
 
+  const decorativeSvg = `
+    <svg width="100%" height="100%" viewBox="0 0 150 300" fill="none" xmlns="http://www.w3.org/2000/svg" class="absolute inset-0">
+        <path d="M0 260C0 279.882 16.1177 296 36 296H146V0H0V260Z" fill="none" stroke="#4A5568" stroke-width="2"/>
+        <path d="M0 260C0 279.882 16.1177 296 36 296" stroke="white" stroke-width="2"/>
+        <circle cx="36" cy="260" r="18" stroke="white" stroke-width="2"/>
+        <circle cx="36" cy="260" r="8" stroke="white" stroke-width="2"/>
+        <circle cx="36" cy="260" r="3" fill="white"/>
+        <line x1="36" y1="242" x2="36" y2="278" stroke="white" stroke-width="1"/>
+        <line x1="18" y1="260" x2="54" y2="260" stroke="white" stroke-width="1"/>
+        <path d="M36 260L25 245" stroke="white" stroke-width="1"/>
+        <path d="M36 260L47 245" stroke="white" stroke-width="1"/>
+        <path d="M36 260L25 275" stroke="white" stroke-width="1"/>
+        <path d="M36 260L47 275" stroke="white" stroke-width="1"/>
+        <circle cx="65" cy="225" r="12" stroke="white" stroke-width="1"/>
+        <circle cx="65" cy="225" r="6" fill="white"/>
+        <path d="M36 260L65 225" stroke="white" stroke-width="1"/>
+        <circle cx="25" cy="245" r="4" fill="white"/>
+        <circle cx="47" cy="245" r="4" fill="white"/>
+        <circle cx="25" cy="275" r="4" fill="white"/>
+        <circle cx="47" cy="275" r="4" fill="white"/>
+        <circle cx="80" cy="250" r="10" stroke="white" stroke-width="1"/>
+        <path d="M65 225L80 250" stroke="white" stroke-width="1"/>
+        <circle cx="70" cy="280" r="8" stroke="white" stroke-width="1"/>
+        <path d="M36 260L70 280" stroke="white" stroke-width="1"/>
+        <circle cx="95" cy="210" r="6" fill="white"/>
+        <path d="M80 250L95 210" stroke="white" stroke-width="1"/>
+    </svg>
+  `
+
   return (
     <div
-      className="relative border-2 border-white rounded-lg p-4 text-center bg-black shadow-lg overflow-hidden"
+      className="relative w-[150px] h-[300px] bg-gray-900 border-2 border-gray-700 overflow-hidden"
       style={{
-        width: '150px',
-        height: '300px',
-        borderRadius: '20px',
+        borderTopLeftRadius: '0',
+        borderTopRightRadius: '0',
+        borderBottomRightRadius: '0',
         borderBottomLeftRadius: '40px',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: '1rem',
+        padding: '0.5rem',
       }}
     >
-      {/* Top right corner arc - using pseudo-elements or a div for styling */}
-      <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-blue-400 transform rotate-45 translate-x-1/2 -translate-y-1/2"></div>
+      <div
+        className="absolute inset-0 pointer-events-none"
+        dangerouslySetInnerHTML={{ __html: decorativeSvg }}
+      />
 
       {/* Content area for SVG */}
       <div
-        className="my-3 flex justify-center items-center flex-grow"
+        className="flex justify-center items-center grow p-4"
         dangerouslySetInnerHTML={{ __html: svg.content }}
         style={{ width: '100%', height: '100%', objectFit: 'contain' }}
       />
 
-      <h3 className="mt-auto text-blue-300 text-lg font-semibold">
+      <h3 className="text-blue-400 text-lg font-semibold mt-auto mb-2">
         {svg.name}
       </h3>
 
-      <div className="mb-3 flex flex-wrap justify-center gap-1">
+      <div className="flex flex-wrap justify-center gap-1 mb-4">
         {svg.tags.map((tag) => (
           <span
             key={tag}
@@ -53,9 +84,6 @@ const SvgItem = ({ svg }) => {
       >
         Copy SVG
       </button>
-
-      {/* Bottom left corner arc - using pseudo-elements or a div for styling */}
-      <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-blue-400 transform -rotate-45 -translate-x-1/2 translate-y-1/2"></div>
     </div>
   )
 }
@@ -68,7 +96,10 @@ export function App() {
 
   useEffect(() => {
     const loadSvgs = async () => {
-      const modules = import.meta.glob('./assets/svgs/*.svg', { as: 'raw' })
+      const modules = import.meta.glob('./assets/svgs/*.svg', {
+        query: '?raw',
+        import: 'default',
+      })
       const dynamicSvgs = []
       let idCounter = 1
 
@@ -113,14 +144,14 @@ export function App() {
 
   return (
     <div className="p-5 max-w-4xl mx-auto bg-gray-900 text-white min-h-screen">
-      <h1 className="text-center text-3xl font-bold mb-5 text-blue-400">
+      <h1 className="text-center text-3xl font-bold mb-8 text-blue-400">
         SVG Archive - Sci-Fi Style Showcase
       </h1>
-      <div className="mb-5">
+      <div className="mb-8">
         <input
           type="text"
           placeholder="搜索 SVG..."
-          className="p-2 border border-gray-700 rounded-md w-full bg-gray-800 text-white placeholder-gray-500"
+          className="p-3 border border-gray-700 rounded-md w-full bg-gray-800 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
           value={searchTerm}
           onInput={(e) => setSearchTerm(e.currentTarget.value)}
         />
@@ -128,7 +159,7 @@ export function App() {
           动态加载的 SVG 数量: {dynamicSvgsCount}
         </p>
       </div>
-      <div className="mb-5 flex flex-wrap gap-2">
+      <div className="mb-8 flex flex-wrap gap-2 justify-center">
         {availableTags.map((tag) => (
           <button
             key={tag}
@@ -139,7 +170,7 @@ export function App() {
           </button>
         ))}
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 justify-items-center">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 justify-items-center">
         {filteredSvgs.map((svg) => (
           <SvgItem key={svg.id} svg={svg} />
         ))}
