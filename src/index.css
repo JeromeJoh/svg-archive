@@ -1,13 +1,28 @@
 @tailwind utilities;
 
+:root {
+  --bg-color: #eee;
+  --grid-item-translate: 0px;
+  --grid-width: 100%;
+  --grid-max-width: 1200px;
+  --grid-item-ratio: 0.7;
+  --grid-item-radius: 0;
+  --grid-gap: 1.5vw;
+  --grid-columns: 7;
+}
+
 html,
 body {
   height: 100%;
   margin: 0;
   padding: 0;
   overflow-x: hidden; /* Prevent horizontal scroll */
+  scrollbar-width: thin;
+  scrollbar-color: #4a5568 var(--bg-color); /* Custom scrollbar colors for Firefox */
 }
 
 body {
-  background-color: #1a202c; /* Ensure body has a default background color */
+  background-color: var(
+    --bg-color
+  ); /* Ensure body has a default background color */
 }

@@ -11,6 +11,8 @@
     "svg:optimize": "svgo -f src/assets/svgs"
   },
   "dependencies": {
+    "@gsap/react": "^2.1.2",
+    "gsap": "^3.15.0",
     "preact": "^10.29.1"
   },
   "devDependencies": {

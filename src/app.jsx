@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'preact/hooks'
+import { useState, useEffect, useRef } from 'preact/hooks'
+import gsap from 'gsap'
 
 const SvgItem = ({ svg }) => {
   const copyToClipboard = () => {
@@ -93,6 +94,14 @@ export function App() {
   const [selectedTags, setSelectedTags] = useState([])
   const [allSvgs, setAllSvgs] = useState([])
   const [dynamicSvgsCount, setDynamicSvgsCount] = useState(0)
+  const cardsRef = useRef([])
+  const containerRef = useRef(null)
+
+  const addToRefs = (el) => {
+    if (el && !cardsRef.current.includes(el)) {
+      cardsRef.current.push(el)
+    }
+  }
 
   useEffect(() => {
     const loadSvgs = async () => {
@@ -118,7 +127,23 @@ export function App() {
       setAllSvgs(dynamicSvgs)
     }
     loadSvgs()
+    console.log('refs', cardsRef.current)
   }, [])
+
+  useEffect(() => {
+    // 🎯 核心替代：创建 GSAP 上下文，并绑定 containerRef 作用域
+    const ctx = gsap.context(() => {
+      // 在这里你可以安全地使用类名选择器，GSAP 只会在当前组件范围内查找
+      gsap.to(cardsRef.current, {
+        yPercent: (i) => (i % 2 === 0 ? -20 : 20),
+        ease: 'none',
+      })
+      console.log('gsap context', cardsRef.current)
+    }, containerRef) // 👈 锁定当前组件作用域
+
+    // 🧹 关键：组件卸载或数据刷新时，自动销毁所有绑定的动画和 ScrollTrigger
+    return () => ctx.revert()
+  }, [allSvgs])
 
   const availableTags = Array.from(new Set(allSvgs.flatMap((svg) => svg.tags)))
 
@@ -174,6 +199,25 @@ export function App() {
         {filteredSvgs.map((svg) => (
           <SvgItem key={svg.id} svg={svg} />
         ))}
+      </div>
+      <div
+        ref={containerRef}
+        className="relative py-[20vh] grid place-items-center w-[--grid-width] max-w-[--grid-max-width] grid-cols-[repeat(var(--grid-columns),1fr)] gap-[--grid-gap]"
+      >
+        {Array.from({ length: 5 }, () => filteredSvgs)
+          .flat()
+          .map((svg, index) => (
+            <div
+              key={index}
+              ref={addToRefs}
+              className="w-[150px] h-[300px] flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-blue-500 bg-blue-500/10 backdrop-blur-sm text-white font-mono text-xl shadow-lg transition-transform hover:scale-105"
+            >
+              <span className="text-xs text-blue-400 font-semibold uppercase tracking-wider mb-1">
+                Index
+              </span>
+              <span className="text-3xl font-bold">{index}</span>
+            </div>
+          ))}
       </div>
     </div>
   )
