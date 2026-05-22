@@ -1,29 +1,22 @@
 import { useState, useEffect, useRef, useMemo } from 'preact/hooks'
 import gsap from 'gsap'
+import Lenis from 'lenis'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 import 'number-flow'
 
 gsap.registerPlugin(ScrollTrigger)
 
-function NumberFlowWrapper({ value }) {
+const NumberFlowWrapper = ({ value }) => {
   const flowRef = useRef(null)
 
   useEffect(() => {
     if (!flowRef.current) return
-
     flowRef.current.update(value)
   }, [value])
 
   return (
-    <number-flow
-      ref={flowRef}
-      style={{
-        fontSize: '2rem',
-        fontWeight: '700',
-        color: '#3b82f6',
-      }}
-    />
+    <number-flow ref={flowRef} className="text-xl font-bold text-blue-400" />
   )
 }
 
@@ -173,26 +166,27 @@ export function App() {
     const lenis = new Lenis({
       duration: 1.2,
       smoothWheel: true,
-      wheelMultiplier: 1,
-      touchMultiplier: 2,
     })
 
-    // Lenis 每次滚动时通知 ScrollTrigger
+    // Lenis 滚动时通知 ScrollTrigger
     lenis.on('scroll', ScrollTrigger.update)
 
-    // GSAP ticker 驱动 Lenis
-    gsap.ticker.add((time) => {
+    // 保存引用，否则 cleanup remove 不掉
+    const update = (time) => {
+      // GSAP ticker 时间单位是秒
       lenis.raf(time * 1000)
-    })
+    }
 
-    // 关闭 GSAP 自己的 lag smoothing
+    gsap.ticker.add(update)
+
+    // 避免 GSAP 自动补帧造成卡顿
     gsap.ticker.lagSmoothing(0)
 
-    return () => {
-      gsap.ticker.remove((time) => {
-        lenis.raf(time * 1000)
-      })
+    // 刷新 ScrollTrigger
+    ScrollTrigger.refresh()
 
+    return () => {
+      gsap.ticker.remove(update)
       lenis.destroy()
     }
   }, [])
@@ -314,6 +308,7 @@ export function App() {
       <div
         ref={containerRef}
         className="
+        w-full
         grid
         grid-cols-1
         md:grid-cols-2
@@ -322,9 +317,11 @@ export function App() {
         justify-items-center
         "
       >
-        {filteredSvgs.map((svg) => (
-          <SvgItem key={svg.id} svg={svg} refCallback={addToRefs} />
-        ))}
+        {Array.from({ length: 6 }, () => filteredSvgs)
+          .flat()
+          .map((svg, index) => (
+            <SvgItem key={index} svg={svg} refCallback={addToRefs} />
+          ))}
       </div>
       <div className="h-dvh"></div>
     </div>
