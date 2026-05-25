@@ -241,56 +241,104 @@ function SvgItem({ svg }) {
   return (
     <div
       className="
-      card
-      relative
-      w-35
-      h-75
-      border-2
-      border-gray-700
-      rounded-xl
-      overflow-hidden
-      flex
-      flex-col
-      p-3
-      shadow-lg"
+        card
+        relative
+        w-72
+        bg-[#111315]
+        text-white
+        border
+        border-zinc-800
+        rounded-[24px]
+        overflow-hidden
+        flex
+        flex-col
+        p-4
+        shadow-2xl"
     >
+      {/* 顶部标签（类似图片中的 Uncommon 挂件标签） */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-[#1e2b4a] text-[#4ea2ff] text-xs font-bold px-6 py-1 rounded-b-xl border-b border-x border-blue-500/30 uppercase tracking-wider">
+        SVG Preview
+      </div>
+
+      {/* SVG 内容容器（类似图片中 HAPE 的主图区域） */}
       <div
         className="
-        grow
-        flex
-        items-center
-        justify-center"
+          grow
+          aspect-square
+          w-full
+          bg-[#17191c]
+          border
+          border-zinc-800
+          rounded-[18px]
+          mt-6
+          flex
+          items-center
+          justify-center
+          p-6
+          relative
+          group"
         dangerouslySetInnerHTML={{
           __html: svg.content,
         }}
       />
 
-      <h3 className="text-blue-400 text-sm font-semibold mt-2">{svg.name}</h3>
+      {/* 标题（类似 HAPE #67） */}
+      <h3 className="text-xl font-bold mt-4 tracking-wide text-zinc-100">
+        {svg.name}
+      </h3>
 
-      <div className="flex gap-1 flex-wrap my-2">
-        {svg.tags.map((tag) => (
-          <span
-            key={tag}
-            className="
-              px-2
-              py-1
-              text-xs"
-          >
-            {tag}
-          </span>
-        ))}
+      {/* 副标题/作者（类似 HAPE PRIME） */}
+      <div className="text-xs text-zinc-500 font-medium mt-1 mb-4 flex items-center gap-1.5">
+        <span className="w-2 h-2 rounded-full bg-zinc-600 inline-block"></span>
+        VECTOR ASSET
       </div>
 
+      {/* 数据/标签展示区（类比底部的 Avg earnings / Distribution） */}
+      <div className="bg-[#17191c] rounded-xl p-3 flex flex-col gap-2 border border-zinc-800/50 mb-4">
+        <div className="flex justify-between items-center">
+          <span className="text-xs text-zinc-400">Tags</span>
+          <span className="text-xs text-zinc-500">{svg.tags.length} items</span>
+        </div>
+
+        <div className="flex gap-1.5 flex-wrap">
+          {svg.tags.map((tag) => (
+            <span
+              key={tag}
+              className="
+                px-2.5
+                py-1
+                bg-zinc-800/60
+                text-zinc-300
+                rounded-md
+                text-[11px]
+                font-medium
+                border
+                border-zinc-700/30"
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* 操作按钮（类似购买/出价按钮的显眼样式） */}
       <button
         onClick={copyToClipboard}
         className="
-        bg-blue-600
-        hover:bg-blue-700
-        rounded
-        p-2
-        text-sm"
+          w-full
+          bg-[#00e676]
+          hover:bg-[#00c853]
+          active:scale-[0.98]
+          text-black
+          font-bold
+          rounded-xl
+          py-3
+          text-sm
+          transition-all
+          duration-200
+          shadow-[0_0_20px_rgba(0,230,118,0.15)]"
       >
-        Copy SVG
+        Copy SVG Code
       </button>
     </div>
   )
