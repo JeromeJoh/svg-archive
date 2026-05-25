@@ -67,7 +67,7 @@ function SearchNav({
   onTagsChange,
   selectedTags,
   availableTags,
-  dynamicSvgsCount,
+  resultCount,
 }) {
   const inputRef = useRef()
   const navRef = useRef()
@@ -96,9 +96,7 @@ function SearchNav({
       onEnter() {
         gsap.to(navRef.current, {
           boxShadow: '0 4px 12px rgba(0,0,0,.5)',
-
           backdropFilter: 'blur(12px)',
-
           duration: 0.3,
         })
       },
@@ -114,14 +112,29 @@ function SearchNav({
     return () => trigger.kill()
   }, [])
 
+  const emitSearch = useCallback(
+    (value) => {
+      clearTimeout(debounceRef.current)
+
+      debounceRef.current = setTimeout(() => {
+        onSearchChange(value)
+      }, 300)
+    },
+    [onSearchChange],
+  )
+
   const handleInput = (value) => {
     setLocalSearch(value)
+    emitSearch(value)
+  }
 
-    clearTimeout(debounceRef.current)
+  const clearSearch = () => {
+    setLocalSearch('')
+    onSearchChange('')
 
-    debounceRef.current = setTimeout(() => {
-      onSearchChange(value)
-    }, 300)
+    requestAnimationFrame(() => {
+      inputRef.current?.focus()
+    })
   }
 
   return (
@@ -137,26 +150,52 @@ function SearchNav({
       py-6"
     >
       <div className="flex flex-col gap-6">
-        <input
-          ref={inputRef}
-          value={localSearch}
-          placeholder="搜索..."
-          onInput={(e) => handleInput(e.target.value)}
-          className="
-          w-full
-          p-3
-          rounded
-          bg-gray-800/60
-          border
-          border-gray-700/50
-          focus:outline-none
-          focus:border-gray-500"
-        />
+        {/* input */}
+
+        <div className="relative">
+          <input
+            ref={inputRef}
+            value={localSearch}
+            placeholder="搜索..."
+            onInput={(e) => handleInput(e.target.value)}
+            className="
+            w-full
+            p-3
+            pr-12
+            rounded
+            bg-gray-800/60
+            border
+            border-gray-700/50
+            focus:outline-none
+            focus:border-gray-500"
+          />
+
+          {localSearch && (
+            <button
+              onClick={clearSearch}
+              className="
+              absolute
+              right-3
+              top-1/2
+              -translate-y-1/2
+              w-7
+              h-7
+              rounded-full
+              bg-gray-700/70
+              hover:bg-gray-600
+              flex
+              items-center
+              justify-center"
+            >
+              ×
+            </button>
+          )}
+        </div>
 
         <div className="flex justify-between items-center gap-4">
           <div className="flex items-center gap-2 whitespace-nowrap">
-            SVG数量:
-            <NumberFlowWrapper value={dynamicSvgsCount} />
+            筛选结果:
+            <NumberFlowWrapper value={resultCount} />
           </div>
 
           <div className="flex flex-wrap gap-2">
@@ -165,16 +204,16 @@ function SearchNav({
                 key={tag}
                 onClick={() => onTagsChange(tag)}
                 className={`
-                    px-3
-                    py-2
-                    rounded
-                    transition-colors
-                    ${
-                      selectedTags.includes(tag)
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-700/50 hover:bg-gray-700'
-                    }
-                  `}
+                  px-3
+                  py-2
+                  rounded
+                  transition-colors
+                  ${
+                    selectedTags.includes(tag)
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-700/50 hover:bg-gray-700'
+                  }
+                `}
               >
                 {tag}
               </button>
@@ -432,7 +471,7 @@ export function App() {
           onTagsChange={handleTagClick}
           selectedTags={selectedTags}
           availableTags={availableTags}
-          dynamicSvgsCount={allSvgs.length}
+          resultCount={filteredSvgs.length}
         />
 
         <CardGrid filteredSvgs={filteredSvgs} />
