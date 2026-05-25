@@ -32,9 +32,8 @@ const SvgItem = ({ svg, refCallback }) => {
     <div
       ref={refCallback}
       className="card relative
-      w-[150px]
-      h-[300px]
-      bg-gray-900
+      w-35
+      h-75
       border-2
       border-gray-700
       rounded-xl
@@ -62,7 +61,6 @@ const SvgItem = ({ svg, refCallback }) => {
             py-1
             rounded
             text-xs
-            bg-gray-700
             "
           >
             {tag}
@@ -94,6 +92,7 @@ export function App() {
 
   const cardsRef = useRef([])
   const containerRef = useRef(null)
+  const navRef = useRef(null)
 
   // 每次重新渲染列表前清空
   cardsRef.current = []
@@ -192,9 +191,49 @@ export function App() {
   }, [])
 
   useEffect(() => {
+    if (!navRef.current) return
+
+    ScrollTrigger.create({
+      trigger: navRef.current,
+      pin: true,
+      pinSpacing: false,
+      start: 'top top',
+      end: 'max',
+      onEnter: () => {
+        gsap.to(navRef.current, {
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
+          backdropFilter: 'blur(12px)',
+          duration: 0.3,
+          ease: 'power2.out',
+        })
+      },
+      onLeaveBack: () => {
+        gsap.to(navRef.current, {
+          boxShadow: 'none',
+          backdropFilter: 'blur(12px)',
+          duration: 0.3,
+          ease: 'power2.out',
+        })
+      },
+    })
+
+    return () => {
+      ScrollTrigger.getAll().forEach((st) => {
+        if (st.vars.trigger === navRef.current) {
+          st.kill()
+        }
+      })
+    }
+  }, [])
+
+  useEffect(() => {
     if (!cardsRef.current.length) return
 
-    ScrollTrigger.getAll().forEach((st) => st.kill())
+    ScrollTrigger.getAll().forEach((st) => {
+      if (st.vars.trigger !== navRef.current) {
+        st.kill()
+      }
+    })
 
     const ctx = gsap.context(() => {
       const columns = 4
@@ -253,57 +292,75 @@ export function App() {
   return (
     <div
       className="
-      p-8
-      bg-gray-900
-      min-h-screen
       text-white"
     >
-      <h1
-        className="
+      <div className="h-lvh flex flex-col items-center justify-center p-8">
+        <h1
+          className="
         text-center
         text-4xl
         mb-6
         font-bold
+        font-display
+        text-violet-500
         "
+        >
+          SVG Archive
+        </h1>
+      </div>
+
+      <nav
+        ref={navRef}
+        className="z-50 backdrop-blur-md bg-gray-900/80 border-b border-gray-700/50 px-8 py-6"
       >
-        SVG Archive
-      </h1>
+        <div className="flex flex-col gap-6">
+          <input
+            className="
+            w-full
+            p-3
+            rounded
+            bg-gray-800/60
+            backdrop-blur-sm
+            border border-gray-700/50
+            focus:border-gray-600
+            focus:outline-none
+            transition-colors
+            "
+            placeholder="搜索..."
+            value={searchTerm}
+            onInput={(e) => setSearchTerm(e.currentTarget.value)}
+          />
 
-      <div className="mb-6">
-        <input
-          className="
-          w-full
-          p-3
-          rounded
-          bg-gray-800
-          "
-          placeholder="搜索..."
-          value={searchTerm}
-          onInput={(e) => setSearchTerm(e.currentTarget.value)}
-        />
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2 whitespace-nowrap">
+              SVG数量:
+              <NumberFlowWrapper value={dynamicSvgsCount} />
+            </div>
 
-        <div className="mt-3 flex items-center gap-2">
-          SVG数量:
-          <NumberFlowWrapper value={dynamicSvgsCount} />
+            <div className="flex gap-2 flex-wrap">
+              {availableTags.map((tag) => (
+                <button
+                  key={tag}
+                  onClick={() => handleTagClick(tag)}
+                  className={`
+                    px-3
+                    py-2
+                    rounded
+                    transition-colors
+                    ${
+                      selectedTags.includes(tag)
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-700/50 hover:bg-gray-700 text-gray-300 hover:text-white'
+                    }
+                  `}
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
-
-      <div className="flex gap-2 flex-wrap mb-8">
-        {availableTags.map((tag) => (
-          <button
-            key={tag}
-            onClick={() => handleTagClick(tag)}
-            className={`
-              px-3
-              py-2
-              rounded
-              ${selectedTags.includes(tag) ? 'bg-blue-600' : 'bg-gray-700'}
-            `}
-          >
-            {tag}
-          </button>
-        ))}
-      </div>
+      </nav>
 
       <div
         ref={containerRef}
@@ -315,6 +372,9 @@ export function App() {
         lg:grid-cols-4
         gap-8
         justify-items-center
+        pt-8
+        px-8
+        pb-8
         "
       >
         {Array.from({ length: 6 }, () => filteredSvgs)

@@ -1,5 +1,12 @@
 @import 'tailwindcss';
 
+@theme {
+  --font-sans: 'Inter', sans-serif;
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-number: 'IBM Plex Mono', monospace;
+}
+
 :root {
   --bg-color: #eee;
   --grid-item-translate: 0px;
@@ -8,7 +15,7 @@
   --grid-item-ratio: 0.7;
   --grid-item-radius: 0;
   --grid-gap: 1.5vw;
-  --grid-columns: 7;
+  --grid-columns: 4;
 }
 
 html,
@@ -17,6 +24,7 @@ body {
   margin: 0;
   padding: 0;
   overflow-x: hidden; /* Prevent horizontal scroll */
+  scrollbar-gutter: both-edges; /* Ensure space for scrollbar */
   scrollbar-width: thin;
   scrollbar-color: #4a5568 var(--bg-color); /* Custom scrollbar colors for Firefox */
 }
