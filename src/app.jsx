@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef, useMemo } from 'preact/hooks'
+import { useState, useEffect, useMemo, useRef, useCallback } from 'preact/hooks'
+
 import gsap from 'gsap'
 import Lenis from 'lenis'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -7,31 +8,202 @@ import 'number-flow'
 
 gsap.registerPlugin(ScrollTrigger)
 
-const NumberFlowWrapper = ({ value }) => {
-  const flowRef = useRef(null)
+/* --------------------------
+Scroll Provider
+--------------------------- */
+
+function ScrollProvider({ children }) {
+  useEffect(() => {
+    const lenis = new Lenis({
+      duration: 1.2,
+      smoothWheel: true,
+    })
+
+    lenis.on('scroll', ScrollTrigger.update)
+
+    const update = (time) => {
+      // gsap ticker 时间单位已经是秒
+      lenis.raf(time * 1000)
+    }
+
+    gsap.ticker.add(update)
+    gsap.ticker.lagSmoothing(0)
+
+    return () => {
+      gsap.ticker.remove(update)
+      lenis.destroy()
+    }
+  }, [])
+
+  return children
+}
+
+/* --------------------------
+Number Flow
+--------------------------- */
+
+function NumberFlowWrapper({ value }) {
+  const flowRef = useRef()
 
   useEffect(() => {
-    if (!flowRef.current) return
-    flowRef.current.update(value)
+    flowRef.current?.update(value)
   }, [value])
 
   return (
-    <number-flow ref={flowRef} className="text-xl font-bold text-blue-400" />
+    <number-flow
+      ref={flowRef}
+      value={value}
+      className="text-xl font-bold text-blue-400"
+    />
   )
 }
 
-const SvgItem = ({ svg, refCallback }) => {
-  const copyToClipboard = () => {
-    navigator.clipboard
-      .writeText(svg.content)
-      .then(() => console.log('copied'))
-      .catch(console.error)
+/* --------------------------
+Search Nav
+--------------------------- */
+
+function SearchNav({
+  onSearchChange,
+  onTagsChange,
+  selectedTags,
+  availableTags,
+  dynamicSvgsCount,
+}) {
+  const inputRef = useRef()
+  const navRef = useRef()
+
+  const [localSearch, setLocalSearch] = useState('')
+  const debounceRef = useRef()
+
+  useEffect(() => {
+    inputRef.current?.focus()
+
+    return () => {
+      clearTimeout(debounceRef.current)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!navRef.current) return
+
+    const trigger = ScrollTrigger.create({
+      trigger: navRef.current,
+      pin: true,
+      pinSpacing: false,
+      start: 'top top',
+      end: 'max',
+
+      onEnter() {
+        gsap.to(navRef.current, {
+          boxShadow: '0 4px 12px rgba(0,0,0,.5)',
+
+          backdropFilter: 'blur(12px)',
+
+          duration: 0.3,
+        })
+      },
+
+      onLeaveBack() {
+        gsap.to(navRef.current, {
+          boxShadow: 'none',
+          duration: 0.3,
+        })
+      },
+    })
+
+    return () => trigger.kill()
+  }, [])
+
+  const handleInput = (value) => {
+    setLocalSearch(value)
+
+    clearTimeout(debounceRef.current)
+
+    debounceRef.current = setTimeout(() => {
+      onSearchChange(value)
+    }, 300)
+  }
+
+  return (
+    <nav
+      ref={navRef}
+      className="
+      z-50
+      backdrop-blur-md
+      bg-gray-900/80
+      border-b
+      border-gray-700/50
+      px-8
+      py-6"
+    >
+      <div className="flex flex-col gap-6">
+        <input
+          ref={inputRef}
+          value={localSearch}
+          placeholder="搜索..."
+          onInput={(e) => handleInput(e.target.value)}
+          className="
+          w-full
+          p-3
+          rounded
+          bg-gray-800/60
+          border
+          border-gray-700/50
+          focus:outline-none
+          focus:border-gray-500"
+        />
+
+        <div className="flex justify-between items-center gap-4">
+          <div className="flex items-center gap-2 whitespace-nowrap">
+            SVG数量:
+            <NumberFlowWrapper value={dynamicSvgsCount} />
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {availableTags.map((tag) => (
+              <button
+                key={tag}
+                onClick={() => onTagsChange(tag)}
+                className={`
+                    px-3
+                    py-2
+                    rounded
+                    transition-colors
+                    ${
+                      selectedTags.includes(tag)
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-700/50 hover:bg-gray-700'
+                    }
+                  `}
+              >
+                {tag}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </nav>
+  )
+}
+
+/* --------------------------
+SVG Item
+--------------------------- */
+
+function SvgItem({ svg }) {
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(svg.content)
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   return (
     <div
-      ref={refCallback}
-      className="card relative
+      className="
+      card
+      relative
       w-35
       h-75
       border-2
@@ -44,7 +216,11 @@ const SvgItem = ({ svg, refCallback }) => {
       shadow-lg"
     >
       <div
-        className="grow flex items-center justify-center"
+        className="
+        grow
+        flex
+        items-center
+        justify-center"
         dangerouslySetInnerHTML={{
           __html: svg.content,
         }}
@@ -57,11 +233,9 @@ const SvgItem = ({ svg, refCallback }) => {
           <span
             key={tag}
             className="
-            px-2
-            py-1
-            rounded
-            text-xs
-            "
+              px-2
+              py-1
+              text-xs"
           >
             {tag}
           </span>
@@ -75,8 +249,7 @@ const SvgItem = ({ svg, refCallback }) => {
         hover:bg-blue-700
         rounded
         p-2
-        text-sm
-        "
+        text-sm"
       >
         Copy SVG
       </button>
@@ -84,206 +257,68 @@ const SvgItem = ({ svg, refCallback }) => {
   )
 }
 
-export function App() {
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedTags, setSelectedTags] = useState([])
-  const [allSvgs, setAllSvgs] = useState([])
-  const [dynamicSvgsCount, setDynamicSvgsCount] = useState(0)
+/* --------------------------
+Card Grid
+--------------------------- */
 
-  const cardsRef = useRef([])
-  const containerRef = useRef(null)
-  const navRef = useRef(null)
-
-  // 每次重新渲染列表前清空
-  cardsRef.current = []
-
-  const addToRefs = (el) => {
-    if (el) cardsRef.current.push(el)
-  }
-
-  // SVG加载
-  useEffect(() => {
-    const loadSvgs = async () => {
-      const modules = import.meta.glob('./assets/svgs/*.svg', {
-        query: '?raw',
-        import: 'default',
-      })
-
-      const loaded = []
-
-      let id = 0
-
-      for (const path in modules) {
-        const content = await modules[path]()
-
-        const name = path.split('/').pop()?.replace('.svg', '') || 'Unknown'
-
-        loaded.push({
-          id: id++,
-          name,
-          content,
-          tags: [name, 'dynamic'],
-        })
-      }
-
-      setAllSvgs(loaded)
-      setDynamicSvgsCount(loaded.length)
-    }
-
-    loadSvgs()
-  }, [])
-
-  // 标签
-  const availableTags = useMemo(() => {
-    return Array.from(new Set(allSvgs.flatMap((svg) => svg.tags)))
-  }, [allSvgs])
-
-  // 筛选
-  const filteredSvgs = useMemo(() => {
-    return allSvgs.filter((svg) => {
-      const matchesSearch =
-        svg.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        svg.tags.some((tag) =>
-          tag.toLowerCase().includes(searchTerm.toLowerCase()),
-        )
-
-      const matchesTags =
-        selectedTags.length === 0 ||
-        selectedTags.every((tag) => svg.tags.includes(tag))
-
-      return matchesSearch && matchesTags
-    })
-  }, [allSvgs, searchTerm, selectedTags])
-
-  const handleTagClick = (tag) => {
-    setSelectedTags((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
-    )
-  }
+function CardGrid({ filteredSvgs }) {
+  const containerRef = useRef()
 
   useEffect(() => {
-    const lenis = new Lenis({
-      duration: 1.2,
-      smoothWheel: true,
-    })
-
-    // Lenis 滚动时通知 ScrollTrigger
-    lenis.on('scroll', ScrollTrigger.update)
-
-    // 保存引用，否则 cleanup remove 不掉
-    const update = (time) => {
-      // GSAP ticker 时间单位是秒
-      lenis.raf(time * 1000)
-    }
-
-    gsap.ticker.add(update)
-
-    // 避免 GSAP 自动补帧造成卡顿
-    gsap.ticker.lagSmoothing(0)
-
-    // 刷新 ScrollTrigger
-    ScrollTrigger.refresh()
-
-    return () => {
-      gsap.ticker.remove(update)
-      lenis.destroy()
-    }
-  }, [])
-
-  useEffect(() => {
-    if (!navRef.current) return
-
-    ScrollTrigger.create({
-      trigger: navRef.current,
-      pin: true,
-      pinSpacing: false,
-      start: 'top top',
-      end: 'max',
-      onEnter: () => {
-        gsap.to(navRef.current, {
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
-          backdropFilter: 'blur(12px)',
-          duration: 0.3,
-          ease: 'power2.out',
-        })
-      },
-      onLeaveBack: () => {
-        gsap.to(navRef.current, {
-          boxShadow: 'none',
-          backdropFilter: 'blur(12px)',
-          duration: 0.3,
-          ease: 'power2.out',
-        })
-      },
-    })
-
-    return () => {
-      ScrollTrigger.getAll().forEach((st) => {
-        if (st.vars.trigger === navRef.current) {
-          st.kill()
-        }
-      })
-    }
-  }, [])
-
-  useEffect(() => {
-    if (!cardsRef.current.length) return
-
-    ScrollTrigger.getAll().forEach((st) => {
-      if (st.vars.trigger !== navRef.current) {
-        st.kill()
-      }
-    })
+    if (!containerRef.current) return
 
     const ctx = gsap.context(() => {
-      const columns = 4
-      const middleColumn = Math.floor(columns / 2)
-      const xIncrement = columns > 1 ? 400 / (columns - 1) : 0
+      const cards = gsap.utils.toArray('.card')
 
-      cardsRef.current.forEach((el, index) => {
-        const column = index % columns
-
-        gsap.set(el, {
-          perspective: 1500,
-        })
+      cards.forEach((el, index) => {
+        const column = index % 4
 
         let xPercent = 0
 
-        if (column === 0) xPercent = -200
-        else if (column === middleColumn) xPercent = 0
-        else if (column === columns - 1) xPercent = 200
-        else {
-          xPercent = -200 + column * xIncrement
+        switch (column) {
+          case 0:
+            xPercent = -200
+            break
+
+          case 1:
+            xPercent = -70
+            break
+
+          case 2:
+            xPercent = 70
+            break
+
+          case 3:
+            xPercent = 200
+            break
         }
 
-        gsap
-          .timeline({
+        gsap.fromTo(
+          el,
+          {
+            rotationX: -25,
+            yPercent: 30,
+            xPercent,
+          },
+          {
+            rotationX: 0,
+            yPercent: 0,
+            xPercent: 0,
+
+            ease: 'none',
+
             scrollTrigger: {
               trigger: el,
+
               start: 'top bottom',
+
               end: 'center center',
+
               scrub: true,
             },
-          })
-          .fromTo(
-            el,
-            {
-              rotationX: -25 * (column + 1),
-              z: 30 * (column + 1),
-              yPercent: 30,
-              xPercent,
-            },
-            {
-              rotationX: 0,
-              z: 0,
-              yPercent: 0,
-              xPercent: 0,
-              transformOrigin: '50% 100%',
-            },
-          )
+          },
+        )
       })
-
-      ScrollTrigger.refresh()
     }, containerRef)
 
     return () => ctx.revert()
@@ -291,99 +326,119 @@ export function App() {
 
   return (
     <div
+      ref={containerRef}
       className="
-      text-white"
+      grid
+      grid-cols-1
+      md:grid-cols-2
+      lg:grid-cols-4
+      gap-8
+      justify-items-center
+      px-8
+      pt-8
+      pb-8"
     >
-      <div className="h-lvh flex flex-col items-center justify-center p-8">
-        <h1
-          className="
-        text-center
-        text-4xl
-        mb-6
-        font-bold
-        font-display
-        text-violet-500
-        "
-        >
-          SVG Archive
-        </h1>
-      </div>
-
-      <nav
-        ref={navRef}
-        className="z-50 backdrop-blur-md bg-gray-900/80 border-b border-gray-700/50 px-8 py-6"
-      >
-        <div className="flex flex-col gap-6">
-          <input
-            className="
-            w-full
-            p-3
-            rounded
-            bg-gray-800/60
-            backdrop-blur-sm
-            border border-gray-700/50
-            focus:border-gray-600
-            focus:outline-none
-            transition-colors
-            "
-            placeholder="搜索..."
-            value={searchTerm}
-            onInput={(e) => setSearchTerm(e.currentTarget.value)}
-          />
-
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2 whitespace-nowrap">
-              SVG数量:
-              <NumberFlowWrapper value={dynamicSvgsCount} />
-            </div>
-
-            <div className="flex gap-2 flex-wrap">
-              {availableTags.map((tag) => (
-                <button
-                  key={tag}
-                  onClick={() => handleTagClick(tag)}
-                  className={`
-                    px-3
-                    py-2
-                    rounded
-                    transition-colors
-                    ${
-                      selectedTags.includes(tag)
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-700/50 hover:bg-gray-700 text-gray-300 hover:text-white'
-                    }
-                  `}
-                >
-                  {tag}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      <div
-        ref={containerRef}
-        className="
-        w-full
-        grid
-        grid-cols-1
-        md:grid-cols-2
-        lg:grid-cols-4
-        gap-8
-        justify-items-center
-        pt-8
-        px-8
-        pb-8
-        "
-      >
-        {Array.from({ length: 6 }, () => filteredSvgs)
-          .flat()
-          .map((svg, index) => (
-            <SvgItem key={index} svg={svg} refCallback={addToRefs} />
-          ))}
-      </div>
-      <div className="h-dvh"></div>
+      {filteredSvgs.map((svg) => (
+        <SvgItem key={svg.id} svg={svg} />
+      ))}
     </div>
+  )
+}
+
+/* --------------------------
+APP
+--------------------------- */
+
+export function App() {
+  const [searchTerm, setSearchTerm] = useState('')
+
+  const [selectedTags, setSelectedTags] = useState([])
+
+  const [allSvgs, setAllSvgs] = useState([])
+
+  /* SVG load */
+
+  useEffect(() => {
+    const loadSvgs = async () => {
+      const modules = import.meta.glob('./assets/svgs/*.svg', {
+        query: '?raw',
+
+        import: 'default',
+      })
+
+      const loaded = await Promise.all(
+        Object.entries(modules).map(async ([path, importer], index) => {
+          const content = await importer()
+
+          const name = path.split('/').pop()?.replace('.svg', '')
+
+          return {
+            id: index,
+            name,
+            content,
+            tags: [name, 'dynamic'],
+          }
+        }),
+      )
+
+      setAllSvgs(loaded)
+    }
+
+    loadSvgs()
+  }, [])
+
+  const availableTags = useMemo(() => {
+    return [...new Set(allSvgs.flatMap((svg) => svg.tags))]
+  }, [allSvgs])
+
+  const filteredSvgs = useMemo(() => {
+    return allSvgs.filter((svg) => {
+      const search = searchTerm.toLowerCase()
+
+      const matchesSearch =
+        svg.name.toLowerCase().includes(search) ||
+        svg.tags.some((tag) => tag.toLowerCase().includes(search))
+
+      const matchesTags =
+        !selectedTags.length ||
+        selectedTags.every((tag) => svg.tags.includes(tag))
+
+      return matchesSearch && matchesTags
+    })
+  }, [allSvgs, searchTerm, selectedTags])
+
+  const handleTagClick = useCallback((tag) => {
+    setSelectedTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
+    )
+  }, [])
+
+  return (
+    <ScrollProvider>
+      <div className="text-white">
+        <div className="h-lvh flex items-center justify-center">
+          <h1
+            className="
+            text-4xl
+            font-bold
+            text-violet-500"
+          >
+            SVG Archive
+          </h1>
+        </div>
+
+        <SearchNav
+          onSearchChange={setSearchTerm}
+          onTagsChange={handleTagClick}
+          selectedTags={selectedTags}
+          availableTags={availableTags}
+          dynamicSvgsCount={allSvgs.length}
+        />
+
+        <CardGrid filteredSvgs={filteredSvgs} />
+
+        <div className="h-dvh" />
+      </div>
+    </ScrollProvider>
   )
 }
