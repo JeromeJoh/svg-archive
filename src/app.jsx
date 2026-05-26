@@ -223,19 +223,22 @@ function SvgItem({ svg }) {
   const copyToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(svg.content)
+      toast.success(`${svg.name} copied to clipboard!`, { duration: 2000 })
     } catch (err) {
       console.error(err)
+      toast.error(`Failed to copy ${svg.name}`, { duration: 2000 })
     }
   }
 
   return (
     <div
+      onClick={copyToClipboard}
       className="
+      cursor-pointer
         card
         relative
         w-64
         h-96
-        bg-red-500
         text-white
         border
         border-zinc-800
@@ -270,54 +273,6 @@ function SvgItem({ svg }) {
           __html: svg.content,
         }}
       />
-
-      {/* 数据/标签展示区（类比底部的 Avg earnings / Distribution） */}
-      <div className="bg-[#17191c] rounded-xl p-3 flex flex-col gap-2 border border-zinc-800/50 mb-4">
-        <div className="flex justify-between items-center">
-          <span className="text-xs text-zinc-400">Tags</span>
-          <span className="text-xs text-zinc-500">{svg.tags.length} items</span>
-        </div>
-
-        <div className="flex gap-1.5 flex-wrap">
-          {svg.tags.map((tag) => (
-            <span
-              key={tag}
-              className="
-                px-2.5
-                py-1
-                bg-zinc-800/60
-                text-zinc-300
-                rounded-md
-                text-[11px]
-                font-medium
-                border
-                border-zinc-700/30"
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {/* 操作按钮（类似购买/出价按钮的显眼样式） */}
-      <button
-        onClick={copyToClipboard}
-        className="
-          w-full
-          bg-[#00e676]
-          hover:bg-[#00c853]
-          active:scale-[0.98]
-          text-black
-          font-bold
-          rounded-xl
-          py-3
-          text-sm
-          transition-all
-          duration-200
-          shadow-[0_0_20px_rgba(0,230,118,0.15)]"
-      >
-        Copy SVG Code
-      </button>
     </div>
   )
 }
@@ -325,6 +280,65 @@ function SvgItem({ svg }) {
 /* --------------------------
 Card Grid
 --------------------------- */
+
+function HeroSection() {
+  const arrowRef = useRef()
+
+  useEffect(() => {
+    if (!arrowRef.current) return
+
+    const tl = gsap.timeline({ repeat: -1 })
+
+    tl.to(arrowRef.current, {
+      y: 8,
+      duration: 0.6,
+      ease: 'sine.inOut',
+    }).to(
+      arrowRef.current,
+      {
+        y: 0,
+        duration: 0.6,
+        ease: 'sine.inOut',
+      },
+      0.6,
+    )
+  }, [])
+
+  return (
+    <div className="h-lvh flex items-center justify-center">
+      <div className="flex flex-col items-center gap-6">
+        <h1
+          className="
+          font-display
+          text-4xl
+          font-bold
+          text-violet-500"
+        >
+          SVG Archive
+        </h1>
+
+        <div className="flex flex-col items-center gap-2">
+          <span className="text-sm text-slate-400">scroll</span>
+          <svg
+            ref={arrowRef}
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="text-slate-400"
+          >
+            <line x1="12" y1="2" x2="12" y2="18"></line>
+            <polyline points="6 12 12 18 18 12"></polyline>
+          </svg>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 function CardGrid({ filteredSvgs }) {
   const containerRef = useRef()
@@ -483,16 +497,7 @@ export function App() {
   return (
     <ScrollProvider>
       <div className="text-white">
-        <div className="h-lvh flex items-center justify-center">
-          <h1
-            className="
-            text-4xl
-            font-bold
-            text-violet-500"
-          >
-            SVG Archive
-          </h1>
-        </div>
+        <HeroSection />
 
         <SearchNav
           onSearchChange={setSearchTerm}
