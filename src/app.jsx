@@ -143,7 +143,6 @@ function SearchNav({
       className="
       z-50
       backdrop-blur-md
-      bg-gray-900/80
       border-b
       border-gray-700/50
       px-8
@@ -158,16 +157,7 @@ function SearchNav({
             value={localSearch}
             placeholder="搜索..."
             onInput={(e) => handleInput(e.target.value)}
-            className="
-            w-full
-            p-3
-            pr-12
-            rounded
-            bg-gray-800/60
-            border
-            border-gray-700/50
-            focus:outline-none
-            focus:border-gray-500"
+            className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow"
           />
 
           {localSearch && (
@@ -243,12 +233,13 @@ function SvgItem({ svg }) {
       className="
         card
         relative
-        w-72
-        bg-[#111315]
+        w-64
+        h-96
+        bg-red-500
         text-white
         border
         border-zinc-800
-        rounded-[24px]
+        rounded-3xl
         overflow-hidden
         flex
         flex-col
@@ -257,16 +248,14 @@ function SvgItem({ svg }) {
     >
       {/* 顶部标签（类似图片中的 Uncommon 挂件标签） */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-[#1e2b4a] text-[#4ea2ff] text-xs font-bold px-6 py-1 rounded-b-xl border-b border-x border-blue-500/30 uppercase tracking-wider">
-        SVG Preview
+        {svg.name}
       </div>
 
       {/* SVG 内容容器（类似图片中 HAPE 的主图区域） */}
       <div
         className="
-          grow
-          aspect-square
+          h-72
           w-full
-          bg-[#17191c]
           border
           border-zinc-800
           rounded-[18px]
@@ -281,17 +270,6 @@ function SvgItem({ svg }) {
           __html: svg.content,
         }}
       />
-
-      {/* 标题（类似 HAPE #67） */}
-      <h3 className="text-xl font-bold mt-4 tracking-wide text-zinc-100">
-        {svg.name}
-      </h3>
-
-      {/* 副标题/作者（类似 HAPE PRIME） */}
-      <div className="text-xs text-zinc-500 font-medium mt-1 mb-4 flex items-center gap-1.5">
-        <span className="w-2 h-2 rounded-full bg-zinc-600 inline-block"></span>
-        VECTOR ASSET
-      </div>
 
       {/* 数据/标签展示区（类比底部的 Avg earnings / Distribution） */}
       <div className="bg-[#17191c] rounded-xl p-3 flex flex-col gap-2 border border-zinc-800/50 mb-4">
@@ -415,6 +393,8 @@ function CardGrid({ filteredSvgs }) {
     <div
       ref={containerRef}
       className="
+      min-h-screen
+      bg-amber-200
       grid
       grid-cols-1
       md:grid-cols-2
