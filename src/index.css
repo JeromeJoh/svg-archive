@@ -30,9 +30,7 @@ body {
 }
 
 body {
-  background-color: var(
-    --bg-color
-  ); /* Ensure body has a default background color */
+  background-color: var(--bg-color);
 }
 
 html.lenis,

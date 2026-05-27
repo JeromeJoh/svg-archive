@@ -94,16 +94,23 @@ function SearchNav({
       end: 'max',
 
       onEnter() {
+        if (window.scrollY === 0) return
         gsap.to(navRef.current, {
-          boxShadow: '0 4px 12px rgba(0,0,0,.5)',
           backdropFilter: 'blur(12px)',
+          duration: 0.3,
+        })
+        gsap.to('.decor-bottom', {
+          scale: 1,
           duration: 0.3,
         })
       },
 
       onLeaveBack() {
         gsap.to(navRef.current, {
-          boxShadow: 'none',
+          duration: 0.3,
+        })
+        gsap.to('.decor-bottom', {
+          scale: 0,
           duration: 0.3,
         })
       },
@@ -143,11 +150,13 @@ function SearchNav({
       className="
       z-50
       backdrop-blur-md
-      border-b
-      border-gray-700/50
+      border-t
+      border-width-1
+      border-gray-700/30
       px-8
       py-6"
     >
+      <div className="decor-bottom absolute bottom-0 left-0 right-0 h-[0.5px] bg-gray-700/30 scale-0"></div>
       <div className="flex flex-col gap-6">
         {/* input */}
 
@@ -155,7 +164,7 @@ function SearchNav({
           <input
             ref={inputRef}
             value={localSearch}
-            placeholder="搜索..."
+            placeholder="search svg name or tag..."
             onInput={(e) => handleInput(e.target.value)}
             className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow"
           />
@@ -184,7 +193,7 @@ function SearchNav({
 
         <div className="flex justify-between items-center gap-4">
           <div className="flex items-center gap-2 whitespace-nowrap">
-            筛选结果:
+            total
             <NumberFlowWrapper value={resultCount} />
           </div>
 
@@ -198,6 +207,8 @@ function SearchNav({
                   py-2
                   rounded
                   transition-colors
+              text-white
+
                   ${
                     selectedTags.includes(tag)
                       ? 'bg-blue-600 text-white'
@@ -260,6 +271,7 @@ function SvgItem({ svg }) {
           h-72
           w-full
           border
+          text-black
           border-zinc-800
           rounded-[18px]
           mt-6
@@ -344,7 +356,7 @@ function CardGrid({ filteredSvgs }) {
   const containerRef = useRef()
 
   useEffect(() => {
-    if (!containerRef.current) return
+    if (!containerRef.current || filteredSvgs.length < 8) return
 
     const ctx = gsap.context(() => {
       const cards = gsap.utils.toArray('.card')
@@ -408,7 +420,6 @@ function CardGrid({ filteredSvgs }) {
       ref={containerRef}
       className="
       min-h-screen
-      bg-amber-200
       grid
       grid-cols-1
       md:grid-cols-2
@@ -416,7 +427,7 @@ function CardGrid({ filteredSvgs }) {
       gap-8
       justify-items-center
       px-8
-      pt-8
+      pt-16
       pb-8"
     >
       {filteredSvgs.map((svg) => (
@@ -496,7 +507,7 @@ export function App() {
 
   return (
     <ScrollProvider>
-      <div className="text-white">
+      <div className="text-slate-700">
         <HeroSection />
 
         <SearchNav
