@@ -170,7 +170,7 @@ function SearchNav({
             value={localSearch}
             placeholder="search"
             onInput={(e) => handleInput(e.target.value)}
-            className="font-sans w-full bg-transparent tex placeholder:text-slate-400 text-slate-700 text-5xl border-b border-slate-200 px-5 py-3 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300"
+            className="font-sans w-full bg-transparent tex placeholder:text-slate-400 text-slate-700 text-5xl border-b border-slate-300 px-5 py-3 transition duration-300 ease focus:outline-none focus:border-slate-400"
           />
 
           {localSearch && (
@@ -211,7 +211,7 @@ function SearchNav({
         <div className="flex justify-between items-center gap-8">
           <div className="flex items-center gap-2 whitespace-nowrap text-gray-400">
             <NumberFlowWrapper value={resultCount} />
-            <span className="align-bottom">/</span>
+            <span className="ml-1 align-bottom">/</span>
             <span className="align-bottom">{totalCount}</span>
           </div>
 
@@ -273,18 +273,17 @@ function SvgItem({ svg }) {
         w-64
         h-96
         text-white
-        border
-        border-zinc-800
-        rounded-3xl
         overflow-hidden
         flex
         flex-col
-        p-4
-        shadow-2xl"
+        p-4"
     >
       {/* 顶部标签（类似图片中的 Uncommon 挂件标签） */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-[#1e2b4a] text-[#4ea2ff] text-xs font-bold px-6 py-1 rounded-b-xl border-b border-x border-blue-500/30 uppercase tracking-wider">
-        {svg.name}
+      <div className="absolute top-0 left-0 right-0 flex justify-center">
+        <div className="absolute inset-x-0 top-1/2 h-px bg-slate-400/40" />
+        <div className="relative text-sm text-black font-sans font-bold p-3 uppercase tracking-wider backdrop-blur-sm">
+          {svg.name}
+        </div>
       </div>
 
       {/* SVG 内容容器（类似图片中 HAPE 的主图区域） */}
@@ -292,17 +291,18 @@ function SvgItem({ svg }) {
         className="
           h-72
           w-full
-          border
           text-black
-          border-zinc-800
-          rounded-[18px]
           mt-6
           flex
           items-center
           justify-center
           p-6
           relative
-          group"
+          group
+          hover:scale-105
+          transition-transform
+          duration-300
+          ease-in-out"
         dangerouslySetInnerHTML={{
           __html: svg.content,
         }}
