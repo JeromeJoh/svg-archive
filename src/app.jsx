@@ -53,7 +53,7 @@ function NumberFlowWrapper({ value }) {
     <number-flow
       ref={flowRef}
       value={value}
-      className="text-xl font-bold text-blue-400"
+      className="text-3xl font-display font-bold text-violet-500 min-w-10 text-end"
     />
   )
 }
@@ -68,6 +68,7 @@ function SearchNav({
   selectedTags,
   availableTags,
   resultCount,
+  totalCount,
 }) {
   const inputRef = useRef()
   const navRef = useRef()
@@ -102,6 +103,12 @@ function SearchNav({
         gsap.to('.decor-bottom', {
           scale: 1,
           duration: 0.3,
+        })
+        gsap.from('.tag', {
+          opacity: 0.3,
+          x: -100,
+          ease: 'power2.out',
+          stagger: 0.05,
         })
       },
 
@@ -150,11 +157,8 @@ function SearchNav({
       className="
       z-50
       backdrop-blur-md
-      border-t
-      border-width-1
-      border-gray-700/30
-      px-8
-      py-6"
+      pb-8
+    "
     >
       <div className="decor-bottom absolute bottom-0 left-0 right-0 h-[0.5px] bg-gray-700/30 scale-0"></div>
       <div className="flex flex-col gap-6">
@@ -164,9 +168,9 @@ function SearchNav({
           <input
             ref={inputRef}
             value={localSearch}
-            placeholder="search svg name or tag..."
+            placeholder="search"
             onInput={(e) => handleInput(e.target.value)}
-            className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow"
+            className="font-sans w-full bg-transparent tex placeholder:text-slate-400 text-slate-700 text-5xl border-b border-slate-200 px-5 py-3 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300"
           />
 
           {localSearch && (
@@ -177,42 +181,60 @@ function SearchNav({
               right-3
               top-1/2
               -translate-y-1/2
-              w-7
-              h-7
               rounded-full
-              bg-gray-700/70
-              hover:bg-gray-600
+              bg-transparent
+              hover:bg-violet-200
+              text-violet-600
+              hover:text-violet-900
+              p-2
               flex
               items-center
-              justify-center"
+              justify-center
+              transition-colors"
             >
-              ×
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              >
+                <line x1="2" y1="2" x2="14" y2="14"></line>
+                <line x1="14" y1="2" x2="2" y2="14"></line>
+              </svg>
             </button>
           )}
         </div>
 
-        <div className="flex justify-between items-center gap-4">
-          <div className="flex items-center gap-2 whitespace-nowrap">
-            total
+        <div className="flex justify-between items-center gap-8">
+          <div className="flex items-center gap-2 whitespace-nowrap text-gray-400">
             <NumberFlowWrapper value={resultCount} />
+            <span className="align-bottom">/</span>
+            <span className="align-bottom">{totalCount}</span>
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 pr-4">
             {availableTags.map((tag) => (
               <button
                 key={tag}
                 onClick={() => onTagsChange(tag)}
                 className={`
-                  px-3
+                  tag
+                  px-4
                   py-2
-                  rounded
+                  rounded-full
                   transition-colors
-              text-white
+                  font-medium
+                  text-sm
+                  select-none
+                  font-display
 
                   ${
                     selectedTags.includes(tag)
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-700/50 hover:bg-gray-700'
+                      ? 'bg-violet-600 text-white hover:bg-violet-700'
+                      : 'bg-violet-200 text-violet-900 hover:bg-violet-300'
                   }
                 `}
               >
@@ -516,6 +538,7 @@ export function App() {
           selectedTags={selectedTags}
           availableTags={availableTags}
           resultCount={filteredSvgs.length}
+          totalCount={allSvgs.length}
         />
 
         <CardGrid filteredSvgs={filteredSvgs} />
