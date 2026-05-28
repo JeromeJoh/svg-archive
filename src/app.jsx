@@ -300,9 +300,7 @@ function SvgItem({ svg }) {
           relative
           group
           hover:scale-105
-          transition-transform
-          duration-300
-          ease-in-out"
+          transition-transform"
         dangerouslySetInnerHTML={{
           __html: svg.content,
         }}
