@@ -458,6 +458,34 @@ function CardGrid({ filteredSvgs }) {
 }
 
 /* --------------------------
+Filename Tags
+--------------------------- */
+
+const TAG_SEP = '__'
+
+/**
+ * 从文件名解析出显示名与标签。
+ * 约定：<display-name>__<tag1>__<tag2>.svg
+ * - 第一段为显示名，其余段为标签（统一小写）
+ * - 无分隔符时，整个文件名即显示名，标签为空
+ */
+function parseSvgFilename(filename) {
+  const base = filename.replace(/\.svg$/i, '')
+
+  const parts = base
+    .split(TAG_SEP)
+    .map((part) => part.trim())
+    .filter(Boolean)
+
+  const [name = base, ...tags] = parts
+
+  return {
+    name,
+    tags: tags.map((tag) => tag.toLowerCase()),
+  }
+}
+
+/* --------------------------
 APP
 --------------------------- */
 
@@ -482,13 +510,15 @@ export function App() {
         Object.entries(modules).map(async ([path, importer], index) => {
           const content = await importer()
 
-          const name = path.split('/').pop()?.replace('.svg', '')
+          const filename = path.split('/').pop() ?? ''
+          const { name, tags } = parseSvgFilename(filename)
 
           return {
             id: index,
             name,
+            filename,
             content,
-            tags: [name, 'dynamic'],
+            tags,
           }
         }),
       )
@@ -505,11 +535,12 @@ export function App() {
 
   const filteredSvgs = useMemo(() => {
     return allSvgs.filter((svg) => {
-      const search = searchTerm.toLowerCase()
+      const search = searchTerm.trim().toLowerCase()
 
       const matchesSearch =
+        !search ||
         svg.name.toLowerCase().includes(search) ||
-        svg.tags.some((tag) => tag.toLowerCase().includes(search))
+        svg.tags.some((tag) => tag === search)
 
       const matchesTags =
         !selectedTags.length ||
