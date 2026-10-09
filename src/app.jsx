@@ -8,6 +8,9 @@ import 'number-flow'
 
 gsap.registerPlugin(ScrollTrigger)
 
+/* 调试开关：显示 grid 与卡片边框，方便观察布局，正式环境设为 false */
+const DEBUG_GRID = false
+
 /* --------------------------
 Scroll Provider
 --------------------------- */
@@ -65,7 +68,7 @@ Search Nav
 function SearchNav({
   onSearchChange,
   onTagsChange,
-  selectedTags,
+  selectedTag,
   availableTags,
   resultCount,
   totalCount,
@@ -232,7 +235,7 @@ function SearchNav({
                   font-display
 
                   ${
-                    selectedTags.includes(tag)
+                    selectedTag === tag
                       ? 'bg-violet-600 text-white hover:bg-violet-700'
                       : 'bg-violet-200 text-violet-900 hover:bg-violet-300'
                   }
@@ -266,7 +269,7 @@ function SvgItem({ svg }) {
   return (
     <div
       onClick={copyToClipboard}
-      className="
+      className={`
       cursor-pointer
         card
         relative
@@ -276,7 +279,8 @@ function SvgItem({ svg }) {
         overflow-hidden
         flex
         flex-col
-        p-4"
+        p-4
+        ${DEBUG_GRID ? 'outline-dashed outline-1 outline-blue-500/70' : ''}`}
     >
       {/* 顶部标签（类似图片中的 Uncommon 挂件标签） */}
       <div className="absolute top-0 left-0 right-0 flex justify-center">
@@ -438,7 +442,7 @@ function CardGrid({ filteredSvgs }) {
   return (
     <div
       ref={containerRef}
-      className="
+      className={`
       min-h-screen
       grid
       grid-cols-1
@@ -447,8 +451,9 @@ function CardGrid({ filteredSvgs }) {
       gap-8
       justify-items-center
       px-8
-      pt-16
-      pb-8"
+      pt-32
+      pb-8
+      ${DEBUG_GRID ? 'outline-dashed outline-1 outline-red-500/70' : ''}`}
     >
       {filteredSvgs.map((svg) => (
         <SvgItem key={svg.id} svg={svg} />
@@ -492,7 +497,7 @@ APP
 export function App() {
   const [searchTerm, setSearchTerm] = useState('')
 
-  const [selectedTags, setSelectedTags] = useState([])
+  const [selectedTag, setSelectedTag] = useState(null)
 
   const [allSvgs, setAllSvgs] = useState([])
 
@@ -542,18 +547,14 @@ export function App() {
         svg.name.toLowerCase().includes(search) ||
         svg.tags.some((tag) => tag === search)
 
-      const matchesTags =
-        !selectedTags.length ||
-        selectedTags.every((tag) => svg.tags.includes(tag))
+      const matchesTag = !selectedTag || svg.tags.includes(selectedTag)
 
-      return matchesSearch && matchesTags
+      return matchesSearch && matchesTag
     })
-  }, [allSvgs, searchTerm, selectedTags])
+  }, [allSvgs, searchTerm, selectedTag])
 
   const handleTagClick = useCallback((tag) => {
-    setSelectedTags((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
-    )
+    setSelectedTag((prev) => (prev === tag ? null : tag))
   }, [])
 
   return (
@@ -564,7 +565,7 @@ export function App() {
         <SearchNav
           onSearchChange={setSearchTerm}
           onTagsChange={handleTagClick}
-          selectedTags={selectedTags}
+          selectedTag={selectedTag}
           availableTags={availableTags}
           resultCount={filteredSvgs.length}
           totalCount={allSvgs.length}
@@ -572,7 +573,11 @@ export function App() {
 
         <CardGrid filteredSvgs={filteredSvgs} />
 
-        <div className="h-dvh" />
+        <div className="h-dvh flex items-end justify-center px-8 pb-16">
+          <footer className="font-display text-sm text-slate-400">
+            Jerome Joh Presents
+          </footer>
+        </div>
       </div>
     </ScrollProvider>
   )
