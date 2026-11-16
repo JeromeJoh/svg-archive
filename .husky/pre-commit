@@ -1,1 +1,1 @@
-npm run svg:optimize && git add .
+npm run svg:optimize && git add src/assets/svgs
