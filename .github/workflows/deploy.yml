@@ -4,17 +4,6 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'src/assets/svgs/**'
-      - 'src/**'
-      - 'public/**'
-      - 'index.html'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'vite.config.js'
-      - 'postcss.config.js'
-      - 'tailwind.config.js'
-      - '.github/workflows/deploy.yml'
   workflow_dispatch:
 
 permissions:
